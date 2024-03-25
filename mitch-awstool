@@ -1,0 +1,121 @@
+#!/bin/bash
+
+aws_region="${AWS_REGION:-}"
+aws_instance_id="${AWS_INSTANCE_ID:-}"
+aws_key="${AWS_KEY:-}"
+
+help() {
+   # Display Help
+   echo "$0 is a helper script to work with awscli"
+   echo
+   echo "This script sets variables if they exist in your environment already."
+   echo "The environvent variables look for the flag in all caps."
+   echo "For example, aws_region will be set if AWS_REGION="eu-north-1" is in"
+   echo "your environment."
+   echo
+   echo "Syntax: $0 [command] [flag]"
+   echo "commands:"
+   echo "  list    list instances"
+   echo "  ssh     ssh into an instance"
+   echo
+   echo "flags:"
+   echo "  --help|-h|help     This menu."
+   echo "  --aws_region       The AWS region you are operating in"
+   echo "  --aws_instance_id  AWS instance ID "
+   echo "  --aws_key          Name of AWS key"
+   echo "  --aws_name|-n      Name of AWS instance"
+   echo "  --verbose|-v       Makes commands more verbose"
+   echo
+   echo "Examples:"
+   echo "  $0 ssh -n my_instance"
+}
+
+# Override env variables if explicitly chosen
+while [[ $# -gt 0 ]]; do
+  option="$1"
+  case $option in
+    --help|-h|help)
+      help
+      exit 0 
+      ;;
+    --aws_region)
+      aws_region="$2"
+      shift
+      shift
+      ;;
+    --aws_instance_id)
+      aws_instance_id="$2"
+      shift
+      shift
+      ;;
+    --aws_name|-n)
+      aws_name="$2"
+      shift
+      shift
+      ;;
+    --aws_key)
+      aws_key="$2"
+      shift
+      shift
+      ;;
+    --verbose|-v)
+      # probably a better way to handle this?
+      set -x
+      shift
+      ;;
+    *)
+      # Do nothing
+      aws_command="$1"
+      shift
+      ;;
+  esac
+done
+
+aws_private_key="$HOME/.ssh/${aws_key}.pem"
+
+list_instances() {
+  # shellcheck disable=SC2016
+  aws ec2 describe-instances \
+    --region "${aws_region}" \
+    --filters Name=tag-key,Values=Name \
+    --query 'Reservations[*].Instances[*].{Instance:InstanceId,State:State.Name,Name:Tags[?Key==`Name`]|[0].Value}' \
+    --output table
+}
+
+ssh_instance() {
+  # Get IP if not provided
+  if [ -z "$aws_ipaddr" ]; then
+    if [ -z "$aws_instance_id" ]; then
+      # Get the instance ID based on the tag in the specified region
+      # TODO: handle if multiple instances share the same name
+      aws_instance_id=$(aws ec2 describe-instances --region "$aws_region" \
+                    --filters "Name=tag:Name,Values=${aws_name}" \
+                    --query "Reservations[*].Instances[*].InstanceId" \
+                    --output text)
+    fi
+
+    # Get the IP address of the Instance using the Instance ID 
+    aws_pubip=$(aws ec2 describe-instances --region "$aws_region" \
+      --instance-ids "$aws_instance_id" \
+      --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
+  fi
+
+  ssh -i "${aws_private_key}" \
+      -o StrictHostKeyChecking=no \
+      -o UserKnownHostsFile=/dev/null \
+      -o GlobalKnownHostsFile=/dev/null \
+      "ubuntu@${aws_pubip}"
+}
+
+case $aws_command in
+  list)
+    list_instances
+    ;;
+  ssh)
+    ssh_instance
+    ;;
+  *)
+    # Wrong command
+    echo "Wrong command"
+    exit 1
+esac
