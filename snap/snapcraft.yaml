@@ -1,0 +1,27 @@
+name: mitch-awstool 
+summary: Tools for interacting with awscli
+description: |
+  This tool aims to make interacting with awscli a little bit easier by
+  using variable environment variables and handling the awscli syntax.
+
+base: core22
+type: app
+version: 0.1.0
+grade: stable
+confinement: strict
+
+apps:
+  mitch-awstool:
+    command: bin/mitch-awstool
+    plugs:
+      - network
+      - home
+    aliases:
+      - mitch-awstool 
+
+parts:
+  mitch-awstool:
+    source: .
+    plugin: dump
+    organize:
+            mitch-awstool: bin/mitch-awstool
