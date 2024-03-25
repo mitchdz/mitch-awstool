@@ -4,16 +4,18 @@ aws_region="${AWS_REGION:-}"
 aws_instance_id="${AWS_INSTANCE_ID:-}"
 aws_key="${AWS_KEY:-}"
 
+program_name="mitch-awstool"
+
 help() {
    # Display Help
-   echo "$0 is a helper script to work with awscli"
+   echo "$program_name is a helper script to work with awscli"
    echo
    echo "This script sets variables if they exist in your environment already."
    echo "The environvent variables look for the flag in all caps."
    echo "For example, aws_region will be set if AWS_REGION="eu-north-1" is in"
    echo "your environment."
    echo
-   echo "Syntax: $0 [command] [flag]"
+   echo "Syntax: $program_name [command] [flag]"
    echo "commands:"
    echo "  list    list instances"
    echo "  ssh     ssh into an instance"
@@ -27,7 +29,7 @@ help() {
    echo "  --verbose|-v       Makes commands more verbose"
    echo
    echo "Examples:"
-   echo "  $0 ssh -n my_instance"
+   echo "  $program_name ssh -n my_instance"
 }
 
 # Override env variables if explicitly chosen
