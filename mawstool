@@ -12,7 +12,7 @@ help() {
    echo
    echo "This script sets variables if they exist in your environment already."
    echo "The environvent variables look for the flag in all caps."
-   echo "For example, aws_region will be set if AWS_REGION="eu-north-1" is in"
+   echo "For example, aws_region will be set if AWS_REGION=eu-north-1 is in"
    echo "your environment."
    echo
    echo "Syntax: $program_name [command] [flag]"
