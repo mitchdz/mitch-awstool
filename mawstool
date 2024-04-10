@@ -227,9 +227,22 @@ terminate_instance() {
     --region "${aws_region}"
 }
 
+hibernate() {
+  if [ -z "$aws_instance_id" ]; then
+    aws_instance_id=$(get_instance_id_from_name)
+  fi
+  aws ec2 stop-instances \
+    --instance-ids "${aws_instance_id}" \
+    --region "${aws_region}" \
+    --hibernate
+}
+
 case $aws_command in
   list)
     list_instances
+    ;;
+  hibernate)
+    hibernate
     ;;
   terminate)
     terminate_instance
