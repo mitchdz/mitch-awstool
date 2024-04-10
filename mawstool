@@ -26,6 +26,7 @@ help() {
    echo "  ssh            ssh into an instance"
    echo "  start          start an instance"
    echo "  stop           stop an instance"
+   echo "  terminate      terminate an instance"
    echo
    echo "flags:"
    echo "  --aws_ami          AWS AMI"
@@ -204,12 +205,34 @@ get_latest_ami() {
 
 describe_ami() {
   aws ec2 describe-images \
-      --image-ids "$aws_ami"
+    --image-ids "$aws_ami"
+}
+
+terminate_instance() {
+  if [ -z "$aws_instance_id" ]; then
+    aws_instance_id=$(get_instance_id_from_name)
+  fi
+
+  # Ask the user if they want to continue
+  read -rp "Terminating instance ${aws_instance_id}. Do you want to continue? (y/n): " answer
+  
+  # Check the user's response
+  if [[ "$answer" != "y" ]]; then
+    echo "Exiting..."
+    exit 0
+  fi
+  
+  aws ec2 terminate-instances \
+    --instance-ids "${aws_instance_id}" \
+    --region "${aws_region}"
 }
 
 case $aws_command in
   list)
     list_instances
+    ;;
+  terminate)
+    terminate_instance
     ;;
   describe)
     describe_ami
