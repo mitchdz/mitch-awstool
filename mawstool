@@ -110,7 +110,7 @@ get_instance_public_ip() {
     --instance-ids "$aws_instance_id" \
     --query "Reservations[*].Instances[*].PublicIpAddress" --output text)
 
-  echo $aws_pubip
+  echo "$aws_pubip"
 }
 
 start_instance() {
@@ -119,8 +119,8 @@ start_instance() {
   fi
 
   aws ec2 start-instances \
-      --instance-ids ${aws_instance_id} \
-      --region ${aws_region}
+      --instance-ids "${aws_instance_id}" \
+      --region "${aws_region}"
 }
 
 stop_instance() {
@@ -129,8 +129,8 @@ stop_instance() {
   fi
 
   aws ec2 stop-instances \
-    --instance-ids ${aws_instance_id} \
-    --region ${aws_region}
+    --instance-ids "${aws_instance_id}" \
+    --region "${aws_region}"
 }
 
 ssh_instance() {
@@ -156,8 +156,8 @@ get_instance_private_ip() {
   fi
 
   aws ec2 describe-instances \
-    --instance-ids ${aws_instance_id} \
-    --region ${aws_region} \
+    --instance-ids "${aws_instance_id}" \
+    --region "${aws_region}" \
     --query 'Reservations[*].Instances[*].PrivateIpAddress' \
     --output text
 }
