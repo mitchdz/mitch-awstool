@@ -1,4 +1,4 @@
-name: mitch-awstool 
+name: mawstool 
 summary: Tools for interacting with awscli
 description: |
   This tool aims to make interacting with awscli a little bit easier by
@@ -12,16 +12,16 @@ confinement: strict
 
 apps:
   mitch-awstool:
-    command: bin/mitch-awstool
+    command: bin/mawstool
     plugs:
       - network
       - home
     aliases:
-      - mitch-awstool 
+      - mawstool 
 
 parts:
-  mitch-awstool:
+  mawstool:
     source: .
     plugin: dump
     organize:
-            mitch-awstool: bin/mitch-awstool
+            mawstool: bin/mawstool
