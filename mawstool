@@ -3,8 +3,9 @@
 aws_region="${AWS_REGION:-}"
 aws_instance_id="${AWS_INSTANCE_ID:-}"
 aws_key="${AWS_KEY:-}"
+aws_arch="${AWS_ARCH:-amd64}"
 
-program_name="mitch-awstool"
+program_name="mawstool"
 
 help() {
    # Display Help
@@ -23,13 +24,19 @@ help() {
    echo "  stop           stop an instance"
    echo "  get_private_ip get the private IP of an instance"
    echo "  get_public_ip  get the public IP of an instance"
+   echo "  get_latest_ami get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
+   echo "  describe       describe an ami"
    echo
    echo "flags:"
-   echo "  --help|-h|help     This menu."
-   echo "  --aws_region       The AWS region you are operating in"
-   echo "  --aws_instance_id  AWS instance ID "
-   echo "  --aws_key          Name of AWS key"
+   echo "  --arch             (default amd64) AWS instance ID"
+   echo "  --aws_ami          AWS AMI"
+   echo "  --aws_instance_id  AWS instance ID"
+   echo "  --aws_key          (inherits AWS_KEY from env) Name of AWS key"
    echo "  --aws_name|-n      Name of AWS instance"
+   echo "  --aws_region       (inherits AWS_REGION from env) The AWS region you are operating in"
+   echo "  --help|-h|help     This menu"
+   echo "  --testing          helpful for when using get_latest_ami to change to use images-testing"
+   echo "  --release          Ubuntu Release"
    echo "  --verbose|-v       Makes commands more verbose"
    echo
    echo "Examples:"
@@ -50,8 +57,23 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --aws_ami)
+      aws_ami="$2"
+      shift
+      shift
+      ;;
+    --release)
+      ubuntu_release="$2"
+      shift
+      shift
+      ;;
     --aws_instance_id)
       aws_instance_id="$2"
+      shift
+      shift
+      ;;
+    --aws_arch)
+      aws_arch="$2"
       shift
       shift
       ;;
@@ -63,6 +85,10 @@ while [[ $# -gt 0 ]]; do
     --aws_key)
       aws_key="$2"
       shift
+      shift
+      ;;
+    --testing)
+      testing="yes"
       shift
       ;;
     --verbose|-v)
@@ -162,9 +188,34 @@ get_instance_private_ip() {
     --output text
 }
 
+get_latest_ami() {
+  image_type="images"
+  if [ -v testing ]; then
+    image_type+="-testing"
+  fi
+  aws ec2 describe-images \
+  	--owners 099720109477 \
+  	--region "$aws_region" \
+  	--filters "Name=name,Values=ubuntu/${image_type}/*${ubuntu_release}*${aws_arch}*" \
+  	--query 'Images[*].[ImageId,CreationDate,Name]' \
+  	--output text \
+  	| sort -k2 -r | head -n1 | awk '{print $1}'
+}
+
+describe_ami() {
+  aws ec2 describe-images \
+      --image-ids "$aws_ami"
+}
+
 case $aws_command in
   list)
     list_instances
+    ;;
+  describe)
+    describe_ami
+    ;;
+  get_latest_ami)
+    get_latest_ami
     ;;
   start)
     start_instance
