@@ -17,8 +17,12 @@ help() {
    echo
    echo "Syntax: $program_name [command] [flag]"
    echo "commands:"
-   echo "  list    list instances"
-   echo "  ssh     ssh into an instance"
+   echo "  list           list instances"
+   echo "  ssh            ssh into an instance"
+   echo "  start          start an instance"
+   echo "  stop           stop an instance"
+   echo "  get_private_ip get the private IP of an instance"
+   echo "  get_public_ip  get the public IP of an instance"
    echo
    echo "flags:"
    echo "  --help|-h|help     This menu."
@@ -30,6 +34,7 @@ help() {
    echo
    echo "Examples:"
    echo "  $program_name ssh -n my_instance"
+   echo "  $program_name get_private_ip -n my_instance --aws_region eu-north-1"
 }
 
 # Override env variables if explicitly chosen
@@ -87,6 +92,7 @@ list_instances() {
 get_instance_id_from_name() {
   # Get the instance ID based on the tag in the specified region
   # TODO: handle if multiple instances share the same name
+  # TODO: could maybe just use the latest created one? OR fail?
   aws_instance_id=$(aws ec2 describe-instances --region "$aws_region" \
     --filters "Name=tag:Name,Values=${aws_name}" \
     --query "Reservations[*].Instances[*].InstanceId" \
