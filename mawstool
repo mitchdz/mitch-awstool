@@ -21,6 +21,7 @@ help() {
    echo "  get_latest_ami get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
    echo "  get_public_ip  get the public IP of an instance"
    echo "  get_private_ip get the private IP of an instance"
+   echo "  hibernate      hibernate the instance"
    echo "  describe       describe an ami"
    echo "  list           list instances"
    echo "  ssh            ssh into an instance"
