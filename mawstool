@@ -18,16 +18,17 @@ help() {
    echo
    echo "Syntax: $program_name [command] [flag]"
    echo "commands:"
-   echo "  get_latest_ami get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
-   echo "  get_public_ip  get the public IP of an instance"
-   echo "  get_private_ip get the private IP of an instance"
-   echo "  hibernate      hibernate the instance"
-   echo "  describe       describe an ami"
-   echo "  list           list instances"
-   echo "  ssh            ssh into an instance"
-   echo "  start          start an instance"
-   echo "  stop           stop an instance"
-   echo "  terminate      terminate an instance"
+   echo "  get_latest_ami       get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
+   echo "  get_public_ip        get the public IP of an instance"
+   echo "  get_private_ip       get the private IP of an instance"
+   echo "  hibernate            hibernate the instance"
+   echo "  hibernate_when_ready poll the hibernate command until it work"
+   echo "  describe             describe an ami"
+   echo "  list                 list instances"
+   echo "  ssh                  ssh into an instance"
+   echo "  start                start an instance"
+   echo "  stop                 stop an instance"
+   echo "  terminate            terminate an instance"
    echo
    echo "flags:"
    echo "  --aws_ami          AWS AMI"
@@ -238,12 +239,37 @@ hibernate() {
     --hibernate
 }
 
+# poll the system and retry hibernate until success
+hibernate_when_ready() {
+  local max_hibernate_attempts=20
+  local hibernate_attempt_sleep_time=10
+
+  # Loop until Hibernation is successful or max_attempts is reached
+  for ((i = 1; i <= $max_hibernate_attempts; i++)); do
+      hibernate
+      if [ $? -eq 0 ]; then
+          echo "Hibernation request successful."
+          break
+      else
+          echo "Attempt $i: Hibernation attempt failed. Retrying in $hibernate_attempt_sleep_time seconds..."
+          sleep $hibernate_attempt_sleep_time
+      fi
+  done
+
+  if [ $i -gt $max_hibernate_attempts ]; then
+      echo "Max Hibernation attempts reached. Exiting."
+  fi
+}
+
 case $aws_command in
   list)
     list_instances
     ;;
   hibernate)
     hibernate
+    ;;
+  hibernate_when_ready)
+    hibernate_when_ready
     ;;
   terminate)
     terminate_instance
