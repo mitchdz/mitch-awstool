@@ -4,6 +4,7 @@ aws_region="${AWS_REGION:-}"
 aws_instance_id="${AWS_INSTANCE_ID:-}"
 aws_key="${AWS_KEY:-}"
 aws_arch="${AWS_ARCH:-amd64}"
+aws_security_group="${AWS_SECURITY_GROUP:-}"
 
 program_name="mawstool"
 
@@ -18,29 +19,32 @@ help() {
    echo
    echo "Syntax: $program_name [command] [flag]"
    echo "commands:"
-   echo "  get_latest_ami       get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
-   echo "  get_public_ip        get the public IP of an instance"
-   echo "  get_private_ip       get the private IP of an instance"
-   echo "  hibernate            hibernate the instance"
-   echo "  hibernate_when_ready poll the hibernate command until it work"
-   echo "  describe             describe an ami"
-   echo "  list                 list instances"
-   echo "  ssh                  ssh into an instance"
-   echo "  start                start an instance"
-   echo "  stop                 stop an instance"
-   echo "  terminate            terminate an instance"
+   echo "  create_hibernation_instance  create an instance with hibernation settings enabled"
+   echo "  get_latest_ami               get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
+   echo "  get_public_ip                get the public IP of an instance"
+   echo "  get_private_ip               get the private IP of an instance"
+   echo "  hibernate                    hibernate the instance"
+   echo "  hibernate_when_ready         poll the hibernate command until it work"
+   echo "  describe                     describe an ami"
+   echo "  list                         list instances"
+   echo "  ssh                          ssh into an instance"
+   echo "  start                        start an instance"
+   echo "  stop                         stop an instance"
+   echo "  terminate                    terminate an instance"
    echo
    echo "flags:"
-   echo "  --aws_ami          AWS AMI"
-   echo "  --aws_instance_id  AWS instance ID"
-   echo "  --aws_key          (inherits AWS_KEY from env) Name of AWS key"
-   echo "  --aws_name|-n      Name of AWS instance"
-   echo "  --aws_region       (inherits AWS_REGION from env) The AWS region you are operating in"
-   echo "  --arch             (default amd64) AWS instance ID"
-   echo "  --help|-h|help     This menu"
-   echo "  --testing          helpful for when using get_latest_ami to change to use images-testing"
-   echo "  --release          Ubuntu Release"
-   echo "  --verbose|-v       Makes commands more verbose"
+   echo "  --aws_ami            AWS AMI"
+   echo "  --aws_instance_id    AWS instance ID"
+   echo "  --aws_instance_type  AWS instance type, varies per region"
+   echo "  --aws_key            (inherits AWS_KEY from env) Name of AWS key"
+   echo "  --aws_name|-n        Name of AWS instance"
+   echo "  --aws_region         (inherits AWS_REGION from env) The AWS region you are operating in"
+   echo "  --aws_security_group (inherits AWS_SECURITY_GROUP from env) The AWS security group"
+   echo "  --arch               (default amd64) AWS instance ID"
+   echo "  --help|-h|help       This menu"
+   echo "  --testing            helpful for when using get_latest_ami to change to use images-testing"
+   echo "  --release            Ubuntu Release"
+   echo "  --verbose|-v         Makes commands more verbose"
    echo
    echo "Examples:"
    echo "  $program_name ssh -n my_instance"
@@ -72,6 +76,16 @@ while [[ $# -gt 0 ]]; do
       ;;
     --aws_instance_id)
       aws_instance_id="$2"
+      shift
+      shift
+      ;;
+    --aws_instance_type)
+      aws_instance_type="$2"
+      shift
+      shift
+      ;;
+    --aws_security_group)
+      aws_security_group="$2"
       shift
       shift
       ;;
@@ -261,7 +275,25 @@ hibernate_when_ready() {
   fi
 }
 
+create_hibernation_instance() {
+  # TODO: more smartly determine volume size. Volume size needs to be able to hold RAM.
+  aws ec2 run-instances \
+    --region "${aws_region}" \
+    --image-id "${aws_ami}" \
+    --count 1 \
+    --instance-type "${aws_instance_type}" \
+    --key-name "${aws_key}" \
+    --security-group-ids "$aws_security_group" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${aws_name}}]" \
+    --metadata-options "HttpTokens=required" \
+    --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"Encrypted":true,"DeleteOnTermination":true,"VolumeSize":24,"VolumeType":"gp3"}}]' \
+    --hibernation-options 'Configured=true'
+}
+
 case $aws_command in
+  create_hibernation_instance)
+    create_hibernation_instance
+    ;;
   list)
     list_instances
     ;;
