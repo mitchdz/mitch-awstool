@@ -127,8 +127,7 @@ list_instances() {
   # shellcheck disable=SC2016
   aws ec2 describe-instances \
     --region "${aws_region}" \
-    --filters Name=tag-key,Values=Name \
-    --query 'Reservations[*].Instances[*].{Instance:InstanceId,State:State.Name,Name:Tags[?Key==`Name`]|[0].Value}' \
+    --query 'Reservations[*].Instances[*].{InstanceID:InstanceId,State:State.Name,Name:Tags[?Key==`Name`].Value | [0],PublicIP:PublicIpAddress,PrivateIP:PrivateIpAddress}' \
     --output table
 }
 
@@ -180,8 +179,9 @@ stop_instance() {
     aws_instance_id=$(get_instance_id_from_name)
   fi
 
+  # shellcheck disable=SC2086
   aws ec2 stop-instances \
-    --instance-ids "${aws_instance_id}" \
+    --instance-ids ${aws_instance_id} \
     --region "${aws_region}"
 }
 
