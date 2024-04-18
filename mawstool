@@ -214,7 +214,7 @@ get_instance_private_ip() {
   fi
 
   aws ec2 describe-instances \
-    --instance-ids "${aws_instance_id}" \
+    --instance-ids ${aws_instance_id} \
     --region "${aws_region}" \
     --query 'Reservations[*].Instances[*].PrivateIpAddress' \
     --output text
@@ -264,7 +264,7 @@ hibernate() {
     aws_instance_id=$(get_instance_id_from_name)
   fi
   aws ec2 stop-instances \
-    --instance-ids "$aws_instance_id" \
+    --instance-ids $aws_instance_id \
     --region "${aws_region}" \
     --hibernate
 }
