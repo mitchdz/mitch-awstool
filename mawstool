@@ -51,6 +51,11 @@ help() {
    echo "  $program_name get_private_ip -n my_instance --aws_region eu-north-1"
 }
 
+if (( $# == 0 )); then
+    help
+    exit 0
+fi
+
 # Override env variables if explicitly chosen
 while [[ $# -gt 0 ]]; do
   option="$1"
