@@ -201,6 +201,7 @@ ssh_instance() {
   fi
 
   ssh -i "${aws_private_key}" \
+    -o IdentitiesOnly=yes \
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
     -o GlobalKnownHostsFile=/dev/null \
