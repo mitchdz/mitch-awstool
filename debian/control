@@ -1,0 +1,16 @@
+Source: mawstool
+Section: misc
+Priority: optional
+Maintainer: Mitchell Dzurick <mitchell.dzurick@canonical.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.5.1
+Homepage: http://www.example.com
+Vcs-Git: https://salsa.debian.org/debian/package-name.git
+Vcs-Browser: https://salsa.debian.org/debian/package-name
+
+Package: mawstool 
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: helper scripts for aws ec2
+ Provides a helper script to do common tasks with awscli.
+
