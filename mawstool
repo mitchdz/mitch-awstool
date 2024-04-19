@@ -20,6 +20,7 @@ help() {
    echo "Syntax: $program_name [command] [flag]"
    echo "commands:"
    echo "  create_hibernation_instance  create an instance with hibernation settings enabled"
+   echo "  describe_security_group      show details about a security group"
    echo "  get_latest_ami               get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
    echo "  get_public_ip                get the public IP of an instance"
    echo "  get_private_ip               get the private IP of an instance"
@@ -34,18 +35,18 @@ help() {
    echo "  terminate                    terminate an instance"
    echo
    echo "flags:"
-   echo "  --aws_ami            AWS AMI"
-   echo "  --aws_arch           (default amd64) AWS instance ID"
-   echo "  --aws_instance_id    AWS instance ID"
-   echo "  --aws_instance_type  AWS instance type, varies per region"
-   echo "  --aws_key            (inherits AWS_KEY from env) Name of AWS key"
-   echo "  --aws_name|-n        Name of AWS instance"
-   echo "  --aws_region         (inherits AWS_REGION from env) The AWS region you are operating in"
-   echo "  --aws_security_group (inherits AWS_SECURITY_GROUP from env) The AWS security group"
-   echo "  --help|-h|help       This menu"
-   echo "  --testing            helpful for when using get_latest_ami to change to use images-testing"
-   echo "  --release            Ubuntu Release"
-   echo "  --verbose|-v         Makes commands more verbose"
+   echo "  --aws_ami                 AWS AMI"
+   echo "  --aws_arch                (default amd64) AWS instance ID"
+   echo "  --aws_instance_id         AWS instance ID"
+   echo "  --aws_instance_type       AWS instance type, varies per region"
+   echo "  --aws_key                 (inherits AWS_KEY from env) Name of AWS key"
+   echo "  --aws_name|-n             Name of AWS instance"
+   echo "  --aws_region              (inherits AWS_REGION from env) The AWS region you are operating in"
+   echo "  --aws_security_group|--sg (inherits AWS_SECURITY_GROUP from env) The AWS security group"
+   echo "  --help|-h|help            This menu"
+   echo "  --testing                 helpful for when using get_latest_ami to change to use images-testing"
+   echo "  --release                 Ubuntu Release"
+   echo "  --verbose|-v              Makes commands more verbose"
    echo
    echo "Examples:"
    echo "  $program_name ssh -n my_instance"
@@ -90,7 +91,7 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    --aws_security_group)
+    --aws_security_group|--sg)
       aws_security_group="$2"
       shift
       shift
@@ -247,6 +248,12 @@ describe_ami() {
     --image-ids "$aws_ami"
 }
 
+describe_security_group() {
+  aws ec2 describe-security-groups \
+  	--region "$aws_region" \
+    --group-ids "$aws_security_group"
+}
+
 terminate_instance() {
   if [ -z "$aws_instance_id" ]; then
     aws_instance_id=$(get_instance_id_from_name)
@@ -316,6 +323,9 @@ create_hibernation_instance() {
 case $aws_command in
   create_hibernation_instance)
     create_hibernation_instance
+    ;;
+  describe_security_group)
+    describe_security_group
     ;;
   list)
     list_instances
