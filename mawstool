@@ -400,6 +400,7 @@ case $aws_command in
     ;;
   *)
     # Wrong command
-    echo "Wrong command"
+    echo "ERROR: Wrong command"
+    help
     exit 1
 esac
