@@ -26,11 +26,13 @@ help() {
    echo "  get_private_ip               get the private IP of an instance"
    echo "  hibernate                    hibernate the instance"
    echo "  hibernate_when_ready         poll the hibernate command until it work"
+   echo "  hibernate_then_start         poll to hibernate, then poll to start an instance"
    echo "  describe_ami                 describe an ami"
    echo "  list                         list instances"
    echo "  list_security_groups         list security groups"
    echo "  ssh                          ssh into an instance"
    echo "  start                        start an instance"
+   echo "  start_when_ready             poll to start an instance"
    echo "  stop                         stop an instance"
    echo "  terminate                    terminate an instance"
    echo
@@ -291,19 +293,46 @@ hibernate_when_ready() {
 
   # Loop until Hibernation is successful or max_attempts is reached
   for ((i = 1; i <= max_hibernate_attempts; i++)); do
-      if hibernate; then
-          echo "Hibernation request successful."
-          break
-      else
-          echo "Attempt $i: Hibernation attempt failed. Retrying in $hibernate_attempt_sleep_time seconds..."
-          sleep "$hibernate_attempt_sleep_time"
-      fi
+    if hibernate; then
+      echo "Hibernation request successful."
+      break
+    else
+      echo "Attempt $i: Hibernation attempt failed. Retrying in $hibernate_attempt_sleep_time seconds..."
+      sleep "$hibernate_attempt_sleep_time"
+    fi
   done
 
   if [ "$i" -gt "$max_hibernate_attempts" ]; then
       echo "Max Hibernation attempts reached. Exiting."
   fi
 }
+
+start_when_ready() {
+  local max_start_attempts=20
+  local start_attempt_sleep_time=10
+
+  # Loop until start is successful or max_attempts is reached
+  for ((i = 1; i <= max_start_attempts; i++)); do
+    if start_instance; then
+      echo "Start request successful."
+      break
+    else
+      echo "Attempt $i: Start attempt failed. Retrying in $start_attempt_sleep_time seconds..."
+      sleep "$start_attempt_sleep_time"
+    fi
+  done
+
+  if [ "$i" -gt "$max_start_attempts" ]; then
+    echo "Max Start attempts reached. Exiting."
+  fi
+}
+
+# This will poll to hibernate the instance, and then poll to start the instance
+hibernate_then_start() {
+  hibernate_when_ready
+  start_when_ready
+}
+
 
 create_hibernation_instance() {
   # TODO: more smartly determine volume size. Volume size needs to be able to hold RAM.
@@ -338,6 +367,12 @@ case $aws_command in
     ;;
   hibernate_when_ready)
     hibernate_when_ready
+    ;;
+  start_when_ready)
+    start_when_ready
+    ;;
+  hibernate_then_start)
+    hibernate_then_start
     ;;
   terminate)
     terminate_instance
