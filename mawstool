@@ -26,7 +26,7 @@ help() {
    echo "  get_private_ip               get the private IP of an instance"
    echo "  hibernate                    hibernate the instance"
    echo "  hibernate_when_ready         poll the hibernate command until it work"
-   echo "  describe                     describe an ami"
+   echo "  describe_ami                 describe an ami"
    echo "  list                         list instances"
    echo "  list_security_groups         list security groups"
    echo "  ssh                          ssh into an instance"
@@ -342,7 +342,7 @@ case $aws_command in
   terminate)
     terminate_instance
     ;;
-  describe)
+  describe_ami)
     describe_ami
     ;;
   get_latest_ami)
