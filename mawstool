@@ -30,7 +30,7 @@ help() {
    echo "  describe_ami                 describe an ami"
    echo "  list                         list instances"
    echo "  list_security_groups         list security groups"
-   echo "  ssh                          ssh into an instance"
+   echo "  ssh                          ssh into an instance, can send command with --ssh_cmd $cmd"
    echo "  start                        start an instance"
    echo "  start_when_ready             poll to start an instance"
    echo "  stop                         stop an instance"
@@ -45,6 +45,7 @@ help() {
    echo "  --aws_name|-n             Name of AWS instance"
    echo "  --aws_region              (inherits AWS_REGION from env) The AWS region you are operating in"
    echo "  --aws_security_group|--sg (inherits AWS_SECURITY_GROUP from env) The AWS security group"
+   echo "  --ssh_cmd                 command to send when using ssh"
    echo "  --help|-h|help            This menu"
    echo "  --testing                 helpful for when using get_latest_ami to change to use images-testing"
    echo "  --release                 Ubuntu Release"
@@ -66,7 +67,7 @@ while [[ $# -gt 0 ]]; do
   case $option in
     --help|-h|help)
       help
-      exit 0 
+      exit 0
       ;;
     --aws_region)
       aws_region="$2"
@@ -110,6 +111,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     --aws_key)
       aws_key="$2"
+      shift
+      shift
+      ;;
+    --ssh_cmd)
+      ssh_cmd="$2"
       shift
       shift
       ;;
@@ -216,7 +222,7 @@ ssh_instance() {
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
     -o GlobalKnownHostsFile=/dev/null \
-    ubuntu@${aws_pubip}
+    ubuntu@${aws_pubip} ${ssh_cmd}
 }
 
 get_instance_private_ip() {
@@ -269,7 +275,7 @@ terminate_instance() {
     echo "Exiting..."
     exit 0
   fi
-  
+
   # shellcheck disable=SC2086
   aws ec2 terminate-instances \
     --instance-ids $aws_instance_id \
