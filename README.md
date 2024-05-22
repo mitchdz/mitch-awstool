@@ -11,6 +11,10 @@ This type of setup is helpful for me when I do rapid testing, I usually stay in 
 
 ## Example for hibernation testing
 ```
-mawstool create_hibernation_instance -n mitchdz-arm64-hibernation --aws_ami ami-0ac08e87e03533a1d --aws_instance_type t3.micro --aws_security_group sg-0e03e00997fa53926
+mawstool create_hibernation_instance \
+         -n mitchdz-arm64-hibernation \
+         --aws_ami ami-0ac08e87e03533a1d \
+         --aws_instance_type t3.micro \
+         --aws_security_group sg-0e03e00997fa53926
 mawstool hibernate_then_start -n mitchdz-arm64-hibernation
 ```
