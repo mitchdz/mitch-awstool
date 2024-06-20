@@ -21,7 +21,8 @@ help() {
    echo "commands:"
    echo "  create_hibernation_instance  create an instance with hibernation settings enabled"
    echo "  describe_security_group      show details about a security group"
-   echo "  get_latest_ami               get the latest AMI for a particular release (requires --release [release], and --testing if devel)"
+   echo "  get_latest_ami               get the latest AMI for a particular release (requires --release [release]"
+   echo "  get_latest_devel_ami         get the latest AMI for a particular release in devel (requires --release [release]"
    echo "  get_public_ip                get the public IP of an instance"
    echo "  get_private_ip               get the private IP of an instance"
    echo "  hibernate                    hibernate the instance"
@@ -47,7 +48,6 @@ help() {
    echo "  --aws_security_group|--sg (inherits AWS_SECURITY_GROUP from env) The AWS security group"
    echo "  --ssh_cmd                 command to send when using ssh"
    echo "  --help|-h|help            This menu"
-   echo "  --testing                 helpful for when using get_latest_ami to change to use images-testing"
    echo "  --release                 Ubuntu Release"
    echo "  --verbose|-v              Makes commands more verbose"
    echo
@@ -117,10 +117,6 @@ while [[ $# -gt 0 ]]; do
     --ssh_cmd)
       ssh_cmd="$2"
       shift
-      shift
-      ;;
-    --testing)
-      testing="yes"
       shift
       ;;
     --verbose|-v)
@@ -387,6 +383,10 @@ case $aws_command in
     describe_ami
     ;;
   get_latest_ami)
+    get_latest_ami
+    ;;
+  get_latest_devel_ami)
+    testing="yes"
     get_latest_ami
     ;;
   start)
